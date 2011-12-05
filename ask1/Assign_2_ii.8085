@@ -1,0 +1,65 @@
+	LXI D,0000H	;(Initialize counters) D:Interrupts E:Loop counter
+	MVI A,0DH	;Interrupt Mask
+	SIM
+	LXI B,0064H	;B-C=100 for 100msec delay (DELB)
+LOOP_1:
+	MOV A,D	;Put Interrup Counter I7 I6 I5 I4 I3 I2 I1 I0 -> A
+	CMA
+	ANI 0FH	;A<-0 0 0 0 I3 I2 I1 I0 (A<-D(mod)16)
+	RLC		
+	RLC
+	RLC
+	RLC		;A<-I3 I2 I1 I0 0 0 0 0 
+	MOV H,A	
+	MOV A,E	;Put Loop Counter L7 L6 L5 L4 L3 L2 L1 L0 -> A
+	CMA
+	ANI 0FH	;A<-0 0 0 0 L3 L2 L1 L0
+	ORA H		;A<-I3 I2 I1 I0 L3 L2 L1 L0
+	STA 3000H	;Led this!
+	DI		;Disable Interrupts to be in DELB routine
+	CALL DELB
+	LDA 2000H	;Check MSB of switches to decide if you should EI
+	RLC
+	JNC GO_ON1
+	EI
+GO_ON1:
+	INR E		;Increase loop counter
+	JMP LOOP_1	;Loop!
+	
+INTR_ROUTINE: ;This routine must be at this address 0AFC.
+	PUSH B		
+	INR D		;Increase Interrupt counter
+	PUSH D		;Push D-E! When POP D, the increased D will be poped!
+	PUSH PSW	;Push Flags and Accumulator
+	LXI B,0032H	;Set B-C for 50msec delay with DELB
+	CALL DELB
+MY_PROG:
+	LXI D,0800H	;D:Loop counter E:On-Switch counter
+	LDA 2000H
+AGAIN:
+	RRC
+	JNC GO_ON2
+	INR E
+GO_ON2:
+	DCR D
+	JNZ AGAIN
+	MOV A,E
+	RLC
+	RLC
+	RLC
+	RLC
+	CMA
+	STA 3000H	;MY_PROG ends
+LOOP_2:
+	RIM
+	ANI 20H	;A(AND)0010 0000 to check I6.5
+	JNZ LOOP_2	;Repeat until I6.5 is 0
+	CALL DELB	;Delay for another 50msec
+	EI
+	POP PSW
+	POP D
+	POP B
+RET
+END	;Remember to put at 0AFC the instruction C3 2A 08-->JMP INTR_ROUTINE
+	;If DELB calls are commented (single step mode) 
+	;put at 0AFC the instruction C3 27 08-->JMP INTR_ROUTINE

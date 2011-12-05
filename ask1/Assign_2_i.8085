@@ -1,0 +1,35 @@
+FLASH:	LXI B,0064H	;B-C<-100
+	CALL LEDS_ON	;Leds On
+	CALL DELB	;Delay for 100msec
+	LDA 2000H	;Read switches
+	ANI F0H	;A(AND)11110000    : Mask
+	RRC
+	RRC
+	RRC
+	RRC		;Shift right 4 times
+	INR A		;A<-A+1
+LOOP_ON:
+	CALL DELB	;Delay for 100msec
+	DCR A		;A<-A-1
+	JNZ LOOP_ON	;Loop until A=0----All_del=[(A+1)x100+100]msec
+	CALL LEDS_OFF	;Leds Off
+	CALL DELB	;Delay for 100msec
+	LDA 2000H	;Read swotches
+	ANI 0FH	;A(AND)00001111    : Mask
+	INR A		;A<-A+1
+LOOP_OFF:
+	CALL DELB	;Delay for 100msec
+	DCR A		;A<-A-1
+	JNZ LOOP_OFF	;Loop until A=0----All_del=[(A+1)x100+100]msec
+	JMP FLASH	;Continues...
+
+LEDS_ON:
+	MVI A,00H
+	STA 3000H
+	RET
+
+LEDS_OFF:
+	MVI A,FFH
+	STA 3000H
+	RET
+END
