@@ -1,4 +1,5 @@
 ~Microprocessors Lab~
+Course website: http://courses.microlab.ntua.gr/course/view.php?id=39
 
 Lab team:  C16
 

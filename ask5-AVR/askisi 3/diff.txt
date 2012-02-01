@@ -1,0 +1,38 @@
+diff --git a/Askisi_3.c b/Askisi_3_bill.c
+index c0acb9c..dd0b40c 100644
+--- a/Askisi_3.c
++++ b/Askisi_3_bill.c
+@@ -41,7 +41,7 @@ int main(void)
+ int input_check(void)
+ {
+     int end = 0;
+-    int ret;
++    int ret = 0;
+     unsigned char input;
+
+     input = PIND;                               //Read the input from PORTD
+@@ -49,15 +49,20 @@ int input_check(void)
+     if (input == 0)                             //Check every posible button
+         return 0;
+     for (;;) {
++    /*
++    * The ret value checking in the clauses
++    * guarantees that only the pressed button of
++    * maximum value will take effect
++    */
+         if (input >= 16)
+             ret = 5;
+-        else if (input >= 8)
++        else if ((input >= 8) && (ret < 4))
+             ret = 4;
+-        else if (input >= 4)
++        else if ((input >= 4) && (ret < 3))
+             ret = 3;
+-        else if (input >= 2)
++        else if ((input >= 2) && (ret < 2))
+             ret = 2;
+-        else if (input >= 1)
++        else if ((input >= 1) && (ret == 0))
+             ret = 1;
+         else                                    //The button was released
+             end = 1;
